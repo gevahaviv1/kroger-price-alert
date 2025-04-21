@@ -42,3 +42,6 @@ Thumbs.db
 *.out
 *.tmp
 *.bak
+
+zenday.db
+
