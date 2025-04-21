@@ -1,6 +1,6 @@
 from flask import Flask, request, jsonify
 from db.models import db, PriceAlertResult
-from trigger-alert-logic.alert_checker import should_trigger_alert
+from trigger_alert_logic.alert_checker import should_trigger_alert
 
 def create_app():
     app = Flask(__name__)
