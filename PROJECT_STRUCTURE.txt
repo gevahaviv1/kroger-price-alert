@@ -1,0 +1,25 @@
+Project Structure - Zenday Kroger Price Alert
+
+/
+├── app.py                  # Main Flask app + background scheduler
+├── db/
+│   └── models.py            # SQLAlchemy database models (PriceAlertResult, Product)
+├── map-kroger-data/
+│   ├── mapper.py            # Mapping Kroger API to Zenday internal structure
+│   ├── response-example.json
+│   ├── zenday-internal-structure.json
+│   └── test_mapper.py
+├── trigger_alert_logic/
+│   ├── alert_checker.py     # Logic to decide if price alert triggers
+│   └── test_alert_checker.py
+├── insert_products.py       # Insert sample products into DB
+├── read_alerts.py            # Read saved alert results from DB
+├── instance/
+│   └── zenday.db             # SQLite database (ignored from Git)
+├── .gitignore                # Ignored files
+└── requirements.txt          # Python project dependencies
+
+Notes:
+- Background batch alert checker runs automatically every 30 seconds.
+- Products and alerts are stored in instance/zenday.db.
+- App entrypoint: app.py
