@@ -19,6 +19,32 @@ def create_app():
     def home():
         return "Zenday Alert Service Running"
 
+    @app.route("/get-alerts", methods=["GET"])
+    def get_alerts():
+        try:
+            user_id = request.args.get('user_id')
+
+            query = PriceAlertResult.query
+            if user_id:
+                query = query.filter_by(user_id=user_id)
+
+            alerts = query.order_by(PriceAlertResult.checked_at.desc()).all()
+
+            response = [
+                {
+                    "product_id": alert.product_id,
+                    "user_id": alert.user_id,
+                    "triggered": alert.triggered,
+                    "checked_at": alert.checked_at.isoformat()  # Format timestamp nicely
+                }
+                for alert in alerts
+            ]
+
+            return jsonify(response)
+        except Exception as e:
+            print(f"❌ Error retrieving alerts: {e}")
+            return jsonify({"error": "Internal server error"}), 500
+
     @app.route('/trigger-alert', methods=['POST'])
     def trigger_alert():
         data = request.json
