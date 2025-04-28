@@ -1,7 +1,9 @@
 from flask import Flask, request, jsonify
-from db.models import db, PriceAlertResult
+from db.models import db, PriceAlertResult, Product
 from trigger_alert_logic.alert_checker import should_trigger_alert
 from apscheduler.schedulers.background import BackgroundScheduler
+
+scheduler = BackgroundScheduler()
 
 def create_app():
     app = Flask(__name__)
@@ -58,6 +60,7 @@ def create_app():
                     product_data = {
                         "id": product.id,
                         "price": {
+                            "regular": product.regular_price,
                             "promo": product.promo_price
                         }
                     }
@@ -74,14 +77,18 @@ def create_app():
             print("✅ [Scheduler] Batch alert check completed (real products from DB)!")
 
     # Initialize and start scheduler
-    scheduler = BackgroundScheduler()
-    scheduler.add_job(func=batch_alert_check, trigger="interval", minutes=0.5)  # Runs every 2 minutes
-    scheduler.start()
-
+    scheduler.add_job(func=batch_alert_check, trigger="interval", seconds=30)  # every 30 seconds
 
     return app
 
-# Entry point
 if __name__ == '__main__':
     app = create_app()
+
+    # Only start the scheduler if this is the main process (not the reloader)
+    from werkzeug.serving import is_running_from_reloader
+    if not is_running_from_reloader():
+        print("Starting background scheduler...")
+        scheduler.start()
+
     app.run(debug=True)
+
