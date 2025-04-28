@@ -41,11 +41,8 @@ def create_app():
 
     def batch_alert_check():
         with app.app_context():
-            sample_products = [
-                {"id": "0001", "price": {"promo": 1.59}},
-                {"id": "0002", "price": {"promo": 2.50}},
-                {"id": "0003", "price": {"promo": 0.99}}
-            ]
+            products = Product.query.all()
+            
             sample_user_thresholds = {
                 "0001": 1.80,
                 "0002": 1.80,
@@ -53,19 +50,28 @@ def create_app():
             }
             user_id = "batch_user"
 
-            for product in sample_products:
-                product_id = product["id"]
-                triggered = should_trigger_alert(product, sample_user_thresholds)
+            for product in products:
+                triggered = False
+                if product.id in sample_user_thresholds:
+                    threshold = sample_user_thresholds[product.id]
+                    # Build a fake product dict to reuse the same logic
+                    product_data = {
+                        "id": product.id,
+                        "price": {
+                            "promo": product.promo_price
+                        }
+                    }
+                    triggered = should_trigger_alert(product_data, sample_user_thresholds)
 
-                result = PriceAlertResult(
-                    product_id=product_id,
-                    user_id=user_id,
-                    triggered=triggered
-                )
-                db.session.add(result)
+                    result = PriceAlertResult(
+                        product_id=product.id,
+                        user_id=user_id,
+                        triggered=triggered
+                    )
+                    db.session.add(result)
 
             db.session.commit()
-            print("✅ [Scheduler] Batch alert check completed!")
+            print("✅ [Scheduler] Batch alert check completed (real products from DB)!")
 
     # Initialize and start scheduler
     scheduler = BackgroundScheduler()

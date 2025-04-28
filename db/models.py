@@ -11,3 +11,9 @@ class PriceAlertResult(db.Model):
     user_id = db.Column(db.String, nullable=False)
     triggered = db.Column(db.Boolean, default=False)
     checked_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+class Product(db.Model):
+    __tablename__ = 'products'
+
+    id = db.Column(db.String, primary_key=True)  # Using productId from Kroger
+    promo_price = db.Column(db.Float, nullable=False)
