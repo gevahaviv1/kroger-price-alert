@@ -43,5 +43,5 @@ Thumbs.db
 *.tmp
 *.bak
 
-zenday.db
-
+# Database
+instance/zenday.db
