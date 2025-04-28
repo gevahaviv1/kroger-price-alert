@@ -36,10 +36,14 @@ def create_app():
             user_id=user_id,
             triggered=triggered
         )
-        db.session.add(result)
-        db.session.commit()
 
-        return jsonify({"triggered": triggered})
+        try:
+            db.session.add(result)
+            db.session.commit()
+        except Exception as e:
+            db.session.rollback()
+            print(f"❌ Error saving PriceAlertResult: {e}")
+            return jsonify({"error": "Internal server error"}), 500
 
     def batch_alert_check():
         with app.app_context():
@@ -51,31 +55,33 @@ def create_app():
                 "0003": 1.00
             }
             user_id = "batch_user"
-
-            for product in products:
-                triggered = False
-                if product.id in sample_user_thresholds:
-                    threshold = sample_user_thresholds[product.id]
-                    # Build a fake product dict to reuse the same logic
-                    product_data = {
-                        "id": product.id,
-                        "price": {
-                            "regular": product.regular_price,
-                            "promo": product.promo_price
+            try:
+                for product in products:
+                    triggered = False
+                    if product.id in sample_user_thresholds:
+                        threshold = sample_user_thresholds[product.id]
+                        # Build a fake product dict to reuse the same logic
+                        product_data = {
+                            "id": product.id,
+                            "price": {
+                                "regular": product.regular_price,
+                                "promo": product.promo_price
+                            }
                         }
-                    }
-                    triggered = should_trigger_alert(product_data, sample_user_thresholds)
+                        triggered = should_trigger_alert(product_data, sample_user_thresholds)
 
-                    result = PriceAlertResult(
-                        product_id=product.id,
-                        user_id=user_id,
-                        triggered=triggered
-                    )
-                    db.session.add(result)
+                        result = PriceAlertResult(
+                            product_id=product.id,
+                            user_id=user_id,
+                            triggered=triggered
+                        )
+                        db.session.add(result)
 
-            db.session.commit()
-            print("✅ [Scheduler] Batch alert check completed (real products from DB)!")
-
+                db.session.commit()
+                print("✅ [Scheduler] Batch alert check completed (real products from DB)!")
+            except Exception as e:
+                db.session.rollback()
+                print(f"❌ Error during batch alert check: {e}")
     # Initialize and start scheduler
     scheduler.add_job(func=batch_alert_check, trigger="interval", seconds=30)  # every 30 seconds
 
