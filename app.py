@@ -1,6 +1,7 @@
 from flask import Flask, request, jsonify
 from db.models import db, PriceAlertResult
 from trigger_alert_logic.alert_checker import should_trigger_alert
+from apscheduler.schedulers.background import BackgroundScheduler
 
 def create_app():
     app = Flask(__name__)
@@ -37,6 +38,40 @@ def create_app():
         db.session.commit()
 
         return jsonify({"triggered": triggered})
+
+    def batch_alert_check():
+        with app.app_context():
+            sample_products = [
+                {"id": "0001", "price": {"promo": 1.59}},
+                {"id": "0002", "price": {"promo": 2.50}},
+                {"id": "0003", "price": {"promo": 0.99}}
+            ]
+            sample_user_thresholds = {
+                "0001": 1.80,
+                "0002": 1.80,
+                "0003": 1.00
+            }
+            user_id = "batch_user"
+
+            for product in sample_products:
+                product_id = product["id"]
+                triggered = should_trigger_alert(product, sample_user_thresholds)
+
+                result = PriceAlertResult(
+                    product_id=product_id,
+                    user_id=user_id,
+                    triggered=triggered
+                )
+                db.session.add(result)
+
+            db.session.commit()
+            print("✅ [Scheduler] Batch alert check completed!")
+
+    # Initialize and start scheduler
+    scheduler = BackgroundScheduler()
+    scheduler.add_job(func=batch_alert_check, trigger="interval", minutes=0.5)  # Runs every 2 minutes
+    scheduler.start()
+
 
     return app
 
