@@ -19,6 +19,9 @@ Built with **Python**, **Flask**, **SQLAlchemy**, and **APScheduler**.
 
 ## 📂 Project Structure
 
+<!-- STRUCTURE_START -->
+
+<!-- STRUCTURE_END -->
 
 ---
 
@@ -26,17 +29,59 @@ Built with **Python**, **Flask**, **SQLAlchemy**, and **APScheduler**.
 
 1. Clone the repository:
 
-   ```bash
-   git clone https://github.com/<your-username>/kroger-price-alert.git
-   cd kroger-price-alert
+         bash
+         git clone https://github.com/<your-username>/kroger-price-alert.git
+         cd kroger-price-alert
 
+2. Create and activate a virtual environment:
 
-👨‍💻 Technologies
+         python3 -m venv venv
+         source venv/bin/activate
 
-    Flask
+3. Install the dependencies:
 
-    Flask-SQLAlchemy
+         pip install -r requirements.txt
 
-    APScheduler
+## 🛠️ Running the App
 
-    SQLite (development)
+1. Initialize the database (optional for fresh install):
+
+         python3 scripts/insert_products.py
+
+2. Start the Flask app:
+
+         python3 app.py
+
+## 📡 API Endpoints
+
+- **POST /trigger-alert**
+
+  - Trigger a price check manually for a product.
+
+  - **Request:** JSON with product data
+
+  - **Response:** Triggered or not.
+
+- **GET /get-alerts**
+
+  - Retrieve past price alert results.
+
+  - **Optional:** ?user_id=xxx to filter alerts by user.
+
+## 🧪 Testing
+
+Run test scripts manually:
+
+      python3 scripts/read_alerts.py
+      python3 map_kroger_data/test_mapper.py
+      python3 trigger_alert_logic/test_alert_checker.py
+
+## 👨‍💻 Technologies
+
+ - Flask
+
+ - Flask-SQLAlchemy
+
+ - APScheduler
+
+ - SQLite
