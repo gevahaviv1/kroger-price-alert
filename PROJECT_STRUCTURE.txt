@@ -1,6 +1,7 @@
 Project Structure - Zenday Kroger Price Alert
 
 ├── PROJECT_STRUCTURE.txt
+├── Program Flow.pdf
 ├── README.md
 ├── app.py
 ├── db
@@ -12,6 +13,7 @@ Project Structure - Zenday Kroger Price Alert
 │   └── zenday-internal-structure.json
 ├── requirements.txt
 ├── scripts
+│   ├── fetch_kroger_data.py
 │   ├── generate_project_structure.py
 │   ├── insert_products.py
 │   └── read_alerts.py

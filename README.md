@@ -22,6 +22,7 @@ Built with **Python**, **Flask**, **SQLAlchemy**, and **APScheduler**.
 <!-- STRUCTURE_START -->
 ```
 ├── PROJECT_STRUCTURE.txt
+├── Program Flow.pdf
 ├── README.md
 ├── app.py
 ├── db
@@ -33,6 +34,7 @@ Built with **Python**, **Flask**, **SQLAlchemy**, and **APScheduler**.
 │   └── zenday-internal-structure.json
 ├── requirements.txt
 ├── scripts
+│   ├── fetch_kroger_data.py
 │   ├── generate_project_structure.py
 │   ├── insert_products.py
 │   └── read_alerts.py
