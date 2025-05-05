@@ -1,5 +1,7 @@
 Project Structure - Zenday Kroger Price Alert
 
+├── PROJECT_STRUCTURE.txt
+├── README.md
 ├── app.py
 ├── db
 │   └── models.py

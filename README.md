@@ -20,7 +20,26 @@ Built with **Python**, **Flask**, **SQLAlchemy**, and **APScheduler**.
 ## 📂 Project Structure
 
 <!-- STRUCTURE_START -->
-
+```
+├── PROJECT_STRUCTURE.txt
+├── README.md
+├── app.py
+├── db
+│   └── models.py
+├── map_kroger_data
+│   ├── mapper.py
+│   ├── response-example.json
+│   ├── test_mapper.py
+│   └── zenday-internal-structure.json
+├── requirements.txt
+├── scripts
+│   ├── generate_project_structure.py
+│   ├── insert_products.py
+│   └── read_alerts.py
+├── trigger_alert_logic
+│   ├── alert_checker.py
+│   └── test_alert_checker.py
+```
 <!-- STRUCTURE_END -->
 
 ---
