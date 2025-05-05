@@ -19,23 +19,23 @@ def upsert_products(data_list):
         mapped = map_kroger_to_zenday(raw)
         prod = Product.query.get(mapped['id'])
         if prod:
-            # Update existing
+            # Update existing product
             prod.name = mapped['name']
             prod.brand = mapped['brand']
             prod.category = mapped['category']
             prod.image_url = mapped['image_url']
             prod.product_url = mapped['product_url']
             prod.regular_price = mapped['price']['regular']
-            prod.promo_price   = mapped['price']['promo']
-            prod.fulfillment   = mapped['fulfillment']
-            prod.stock_level   = mapped['stock_level']
-            prod.size          = mapped['size']
-            prod.sold_by       = mapped['sold_by']
-            prod.location      = mapped['location']
-            prod.dimensions    = mapped['dimensions']
+            prod.promo_price = mapped['price']['promo']
+            prod.fulfillment = mapped['fulfillment']
+            prod.stock_level = mapped['stock_level']
+            prod.size = mapped['size']
+            prod.sold_by = mapped['sold_by']
+            prod.location = mapped['location']
+            prod.dimensions = mapped['dimensions']
             prod.temperature_sensitive = mapped['temperature_sensitive']
         else:
-            # Insert new
+            # Insert new product
             prod = Product(
                 id=mapped['id'],
                 name=mapped['name'],
@@ -68,9 +68,8 @@ if __name__ == '__main__':
     app = create_app()
     with app.app_context():
         raw_data = load_json(json_path)
-        # raw_data may be either a list of items or wrap under 'data'
+        # raw_data may be either a list of items or wrapped under 'data'
         items = raw_data.get('data') if isinstance(raw_data, dict) and 'data' in raw_data else raw_data
         upsert_products(items)
         db.session.commit()
         print(f"✅ Upserted {len(items)} products from {json_path}")
-
