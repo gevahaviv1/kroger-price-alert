@@ -98,11 +98,12 @@ def create_app():
     @app.route('/product/watch', methods=['POST'])
     def upsert_product_and_alert():
         data = request.get_json() or {}
-        pid  = data.get("product_id")
-        if not pid:
+        prod_data = data.get("product")
+        pid  = prod_data.get("id")
+        if not id:
             return jsonify({"error": "Missing product_id"}), 400
 
-        result    = process_product_data(data)
+        result    = process_product_data(prod_data)
         return jsonify(result), 200
 
     return app
