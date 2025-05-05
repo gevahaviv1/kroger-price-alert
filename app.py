@@ -99,7 +99,10 @@ def create_app():
     def upsert_product_and_alert():
         data = request.get_json() or {}
         prod_data = data.get("product")
-        pid  = prod_data.get("id")
+        if not prod_data:
+            return jsonify({"error": "Missing 'product' object"}), 400
+        
+        id  = prod_data.get("id")
         if not id:
             return jsonify({"error": "Missing product_id"}), 400
 
