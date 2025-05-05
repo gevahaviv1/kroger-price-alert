@@ -66,6 +66,7 @@ def create_app():
         try:
             db.session.add(result)
             db.session.commit()
+            return jsonify({"tirggered": triggered}), 200
         except Exception as e:
             db.session.rollback()
             print(f"❌ Error saving PriceAlertResult: {e}")
