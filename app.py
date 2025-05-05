@@ -4,10 +4,6 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from scripts.fetch_kroger_data import get_access_token, fetch_products
 from map_kroger_data.mapper import map_kroger_to_zenday
 
-# Define your watch-list IDs and polling interval
-WATCHED_IDS = ["0001", "0002", "0003"]
-POLL_MINUTES = 5
-
 scheduler = BackgroundScheduler()
 
 def create_app():
@@ -106,14 +102,7 @@ def create_app():
         if not pid:
             return jsonify({"error": "Missing product_id"}), 400
 
-        token = get_access_token()
-        items = fetch_products(token, term=pid, limit=5)
-        raw   = next((i for i in items if i.get("productId")==pid), None)
-        if not raw:
-            return jsonify({"error": f"No Kroger data for {pid}"}), 404
-
-        prod_data = map_kroger_to_zenday(raw)
-        result    = process_product_data(prod_data)
+        result    = process_product_data(data)
         return jsonify(result), 200
 
     return app

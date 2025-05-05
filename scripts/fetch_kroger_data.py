@@ -1,5 +1,4 @@
 import os
-import json
 import logging
 from dotenv import load_dotenv
 import requests
@@ -72,20 +71,3 @@ def fetch_products(token: str, term: str, limit: int = 50) -> list:
             break
 
     return products
-
-def main():
-    term = os.getenv('PRODUCT_SEARCH_TERM', 'milk')
-    page_limit = int(os.getenv('PRODUCT_PAGE_LIMIT', '50'))
-
-    try:
-        token = get_access_token()
-        items = fetch_products(token, term, page_limit)
-        out_file = f'{term}_products.json'
-        with open(out_file, 'w', encoding='utf-8') as f:
-            json.dump(items, f, indent=2)
-        logger.info(f'Saved {len(items)} products to {out_file}')
-    except Exception:
-        logger.error('Failed to fetch or save product data')
-
-if __name__ == '__main__':
-    main()
