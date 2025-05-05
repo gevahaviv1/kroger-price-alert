@@ -15,5 +15,3 @@ Project Structure - Zenday Kroger Price Alert
 ├── scripts
 │   ├── fetch_kroger_data.py
 │   ├── generate_project_structure.py
-│   ├── insert_products.py
-│   ├── read_alerts.py

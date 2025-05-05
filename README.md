@@ -36,8 +36,6 @@ Built with **Python**, **Flask**, **SQLAlchemy**, and **APScheduler**.
 ├── scripts
 │   ├── fetch_kroger_data.py
 │   ├── generate_project_structure.py
-│   ├── insert_products.py
-│   ├── read_alerts.py
 ```
 <!-- STRUCTURE_END -->
 
