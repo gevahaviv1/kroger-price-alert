@@ -37,10 +37,7 @@ Built with **Python**, **Flask**, **SQLAlchemy**, and **APScheduler**.
 │   ├── fetch_kroger_data.py
 │   ├── generate_project_structure.py
 │   ├── insert_products.py
-│   └── read_alerts.py
-├── trigger_alert_logic
-│   ├── alert_checker.py
-│   └── test_alert_checker.py
+│   ├── read_alerts.py
 ```
 <!-- STRUCTURE_END -->
 
