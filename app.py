@@ -24,7 +24,7 @@ def create_app():
     def home():
         return "Zenday Alert Service Running"
 
-    @app.route('/trigger-alert', methods=['POST'])
+    @app.route('/product', methods=['POST'])
     def upsert_product_and_alert():
         data = request.get_json() or {}
         product_data = data.get("product")
