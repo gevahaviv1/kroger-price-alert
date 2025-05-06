@@ -6,20 +6,20 @@ from map_kroger_data.mapper import map_kroger_to_zenday
 
 scheduler = BackgroundScheduler()
 
+
 def create_app():
     app = Flask(__name__)
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///zenday.db'
-    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+    app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///zenday.db"
+    app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
     db.init_app(app)
 
     with app.app_context():
         db.create_all()
 
-    @app.route('/')
+    @app.route("/")
     def home():
         return "Zenday Alert Service Running"
-
 
     # top-of-file
     WATCHED_IDS = ["0001", "0002", "0003"]
@@ -31,9 +31,9 @@ def create_app():
         print an alert if it’s new or the promo price dropped.
         Returns a dict with the result.
         """
-        pid     = prod_data["id"]
+        pid = prod_data["id"]
         new_reg = prod_data["price"]["regular"]
-        new_pr  = prod_data["price"]["promo"]
+        new_pr = prod_data["price"]["promo"]
 
         existing = Product.query.get(pid)
 
@@ -41,7 +41,7 @@ def create_app():
             old_pr = existing.promo_price or 0
             if new_pr is not None and new_pr < old_pr:
                 existing.regular_price = new_reg
-                existing.promo_price   = new_pr
+                existing.promo_price = new_pr
                 db.session.add(existing)
                 db.session.commit()
                 print(f"🔔 Price drop for {pid}: {old_pr} → {new_pr}")
@@ -64,20 +64,19 @@ def create_app():
             sold_by=prod_data.get("sold_by"),
             location=prod_data.get("location"),
             dimensions=prod_data.get("dimensions"),
-            temperature_sensitive=prod_data.get("temperature_sensitive")
+            temperature_sensitive=prod_data.get("temperature_sensitive"),
         )
         db.session.add(new_p)
         db.session.commit()
         print(f"🔔 New product added: {pid} @ promo {new_pr}")
         return {"alert": True, "new_price": new_pr}
 
-
     def monitor_watched_products():
         with app.app_context():
             token = get_access_token()
             for pid in WATCHED_IDS:
                 items = fetch_products(token, term=pid, limit=5)
-                raw   = next((i for i in items if i.get("productId")==pid), None)
+                raw = next((i for i in items if i.get("productId") == pid), None)
                 if not raw:
                     print(f"⚠️  No data for {pid}")
                     continue
@@ -90,35 +89,56 @@ def create_app():
         trigger="interval",
         minutes=POLL_INTERVAL_MINUTES,
         id="kroger_watchlist_job",
-        replace_existing=True
+        replace_existing=True,
     )
 
-
     # Route to manually trigger for one product
-    @app.route('/product/watch', methods=['POST'])
+    @app.route("/product/watch", methods=["POST"])
     def upsert_product_and_alert():
         data = request.get_json() or {}
         prod_data = data.get("product")
         if not prod_data:
             return jsonify({"error": "Missing 'product' object"}), 400
-        
-        id  = prod_data.get("id")
+
+        id = prod_data.get("id")
         if not id:
             return jsonify({"error": "Missing product_id"}), 400
 
-        result    = process_product_data(prod_data)
+        result = process_product_data(prod_data)
+        return jsonify(result), 200
+
+    @app.route("/products", methods=["GET"])
+    def list_products():
+        prods = Product.query.all()
+        # turn each SQLAlchemy object into a plain dict
+        result = []
+        for p in prods:
+            result.append(
+                {
+                    "id": p.id,
+                    "name": p.name,
+                    "brand": p.brand,
+                    "category": p.category,
+                    "regular_price": p.regular_price,
+                    "promo_price": p.promo_price,
+                    "stock_level": p.stock_level,
+                    "temperature_sensitive": p.temperature_sensitive,
+                    # … include any other fields you care about …
+                }
+            )
         return jsonify(result), 200
 
     return app
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     app = create_app()
 
     # Only start the scheduler if this is the main process (not the reloader)
     from werkzeug.serving import is_running_from_reloader
+
     if not is_running_from_reloader():
         print("Starting background scheduler...")
         scheduler.start()
 
     app.run(debug=True)
-
