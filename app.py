@@ -1,7 +1,13 @@
+import os
 from flask import Flask, request, jsonify
 from db.models import db, Product
 from apscheduler.schedulers.background import BackgroundScheduler
-from scripts.fetch_kroger_data import get_access_token, fetch_products
+
+from scripts.fetch_kroger_data import (
+    fetch_products,
+    get_access_token,
+    fetch_nearest_location,
+)
 from map_kroger_data.mapper import map_kroger_to_zenday
 
 scheduler = BackgroundScheduler()
@@ -21,8 +27,10 @@ def create_app():
     def home():
         return "Zenday Alert Service Running"
 
+        # 1) kick off the Authorization Code flow
+
     # top-of-file
-    WATCHED_IDS = ["0001", "0002", "0003"]
+    WATCHED_IDS = ["0001111041700"]
     POLL_INTERVAL_MINUTES = 5
 
     def process_product_data(prod_data):
@@ -74,8 +82,15 @@ def create_app():
     def monitor_watched_products():
         with app.app_context():
             token = get_access_token()
+
+            loc = fetch_nearest_location(token, zip_code="45202")
+            loc_id = loc.get("locationId")
+            if not loc_id:
+                print("⚠️  No Kroger location found")
+                return
+
             for pid in WATCHED_IDS:
-                items = fetch_products(token, term=pid, limit=5)
+                items = fetch_products(token, term=pid, limit=5, location_id=loc_id)
                 raw = next((i for i in items if i.get("productId") == pid), None)
                 if not raw:
                     print(f"⚠️  No data for {pid}")
@@ -87,7 +102,7 @@ def create_app():
     scheduler.add_job(
         func=monitor_watched_products,
         trigger="interval",
-        minutes=POLL_INTERVAL_MINUTES,
+        seconds=POLL_INTERVAL_MINUTES,
         id="kroger_watchlist_job",
         replace_existing=True,
     )
@@ -95,6 +110,10 @@ def create_app():
     # Route to manually trigger for one product
     @app.route("/product/watch", methods=["POST"])
     def upsert_product_and_alert():
+        token = app.config.get("KROGER_TOKEN")
+        if not token:
+            return jsonify({"error": "Not authorized – please /login"}), 401
+
         data = request.get_json() or {}
         prod_data = data.get("product")
         if not prod_data:
