@@ -32,10 +32,13 @@ Built with **Python**, **Flask**, **SQLAlchemy**, and **APScheduler**.
 │   ├── response-example.json
 │   ├── test_mapper.py
 │   └── zenday-internal-structure.json
+├── plots
+│   └── 0001111041700_price_history.png
 ├── requirements.txt
 ├── scripts
 │   ├── fetch_kroger_data.py
 │   ├── generate_project_structure.py
+│   └── plot_history.py
 ```
 <!-- STRUCTURE_END -->
 
