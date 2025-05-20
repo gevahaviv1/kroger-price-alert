@@ -48,15 +48,23 @@ def create_app():
 
         if existing:
             old_pr = existing.promo_price or 0
+            new_pr = old_pr - 0.1
+
             if new_pr is not None and new_pr < old_pr:
                 # Update price in the database
                 existing.regular_price = new_reg
                 existing.promo_price = new_pr
                 db.session.add(existing)
+                history = PriceHistory(
+                    product_id=pid, promo_price=new_pr, regular_price=new_reg
+                )
+                db.session.add(history)
+                print(f"✅ Polled prices at {datetime.utcnow().isoformat()}")
                 db.session.commit()
                 print(f"🔔 Price drop for {pid}: {old_pr} → {new_pr}")
                 return {"alert": True, "old_price": old_pr, "new_price": new_pr}
                 # Record the price drop
+
             history = PriceHistory(
                 product_id=pid, promo_price=new_pr, regular_price=new_reg
             )
