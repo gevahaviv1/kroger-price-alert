@@ -1,7 +1,8 @@
 import os
 from flask import Flask, request, jsonify
-from db.models import db, Product
+from db.models import db, Product, PriceHistory
 from apscheduler.schedulers.background import BackgroundScheduler
+from datetime import datetime
 
 from scripts.fetch_kroger_data import (
     fetch_products,
@@ -48,12 +49,20 @@ def create_app():
         if existing:
             old_pr = existing.promo_price or 0
             if new_pr is not None and new_pr < old_pr:
+                # Update price in the database
                 existing.regular_price = new_reg
                 existing.promo_price = new_pr
                 db.session.add(existing)
                 db.session.commit()
                 print(f"🔔 Price drop for {pid}: {old_pr} → {new_pr}")
                 return {"alert": True, "old_price": old_pr, "new_price": new_pr}
+                # Record the price drop
+            history = PriceHistory(
+                product_id=pid, promo_price=new_pr, regular_price=new_reg
+            )
+            db.session.add(history)
+            print(f"✅ Polled prices at {datetime.utcnow().isoformat()}")
+            db.session.commit()
             return {"alert": False}
 
         # not exists → create + alert
@@ -75,8 +84,15 @@ def create_app():
             temperature_sensitive=prod_data.get("temperature_sensitive"),
         )
         db.session.add(new_p)
-        db.session.commit()
         print(f"🔔 New product added: {pid} @ promo {new_pr}")
+
+        # Record the price drop
+        history = PriceHistory(
+            product_id=pid, promo_price=new_pr, regular_price=new_reg
+        )
+        db.session.add(history)
+        print(f"✅ Polled prices at {datetime.utcnow().isoformat()}")
+        db.session.commit()
         return {"alert": True, "new_price": new_pr}
 
     def monitor_watched_products():
@@ -146,6 +162,25 @@ def create_app():
                 }
             )
         return jsonify(result), 200
+
+    @app.route("/product/<product_id>/history", methods=["GET"])
+    def get_price_history(product_id):
+
+        history = (
+            PriceHistory.query.filter_by(product_id=product_id)
+            .order_by(PriceHistory.timestamp.desc())
+            .all()
+        )
+        return jsonify(
+            [
+                {
+                    "timestamp": h.timestamp.isoformat(),
+                    "promo_price": h.promo_price,
+                    "regular_price": h.regular_price,
+                }
+                for h in history
+            ]
+        )
 
     return app
 
